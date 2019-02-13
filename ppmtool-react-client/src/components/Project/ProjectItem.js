@@ -28,7 +28,7 @@ export default class ProjectItem extends Component {
                                 </a>
                                 <a href="">
                                     <li className="list-group-item delete">
-                                        <i class="fas fa-trash-alt">Delete Project</i>
+                                        <i className="fas fa-trash-alt">Delete Project</i>
                                     </li>
                                 </a>
                             </ul>
