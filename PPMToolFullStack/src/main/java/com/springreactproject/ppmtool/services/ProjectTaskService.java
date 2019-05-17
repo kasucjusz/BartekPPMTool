@@ -11,6 +11,7 @@ import com.springreactproject.ppmtool.repository.ProjectTaskRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.security.Principal;
 import java.util.List;
 
 @Service
@@ -25,10 +26,14 @@ public class ProjectTaskService {
     private ProjectRepository projectRepository;
 
 
-    public ProjectTask addProjectTask(String projectIdentifier, ProjectTask projectTask){
+    @Autowired
+    private ProjectService projectService;
 
-        try{
-            Backlog backlog = backlogRepository.findByProjectIdentifier(projectIdentifier);
+
+    public ProjectTask addProjectTask(String projectIdentifier, ProjectTask projectTask, Principal principal){
+
+
+            Backlog backlog = projectService.findProjectByIdentifier(projectIdentifier, principal).getBacklog();//backlogRepository.findByProjectIdentifier(projectIdentifier);
             projectTask.setBacklog(backlog);
             Integer BacklogSequence=backlog.getPTSequence();
             BacklogSequence++;
@@ -39,7 +44,7 @@ public class ProjectTaskService {
             projectTask.setProjectSequence(projectIdentifier+"-"+BacklogSequence);
             projectTask.setProjectIdentifier(projectIdentifier);
 
-            if(projectTask.getPriority()==0||projectTask.getPriority()==null){
+            if(projectTask.getPriority()==null||projectTask.getPriority()==0){
                 projectTask.setPriority(3);
             }
 
@@ -48,11 +53,7 @@ public class ProjectTaskService {
             }
 
             return projectTaskRepository.save(projectTask);
-        }
-        catch (Exception e)
-        {
-            throw new ProjectNotFoundException("Project Not Found");
-        }
+
 
 
 
@@ -63,27 +64,29 @@ public class ProjectTaskService {
 
 
 
-    public Iterable<ProjectTask> findBacklogById(String id){
+    public Iterable<ProjectTask> findBacklogById(String id, Principal principal){
 
-        Project project=projectRepository.findByProjectIdentifier(id);
-        if(project==null)
+        Project project=projectService.findProjectByIdentifier(id, principal);
+        if(!project.getProjectLeader().equals(principal.getName()))
         {
-            throw new ProjectNotFoundException("Project with ID: " +id+" does not exist");
+            throw new ProjectNotFoundException("Project doesnt exist or you are not the owner");
         }
+//        if(project==null)
+//        {
+//            throw new ProjectNotFoundException("Project with ID: " +id+" does not exist");
+//        }
 
         return projectTaskRepository.findByProjectIdentifierOrderByPriority(id);
 
 
     }
 
-    public ProjectTask findPtByProjectSeequence(String backlog_id, String pt_id){
+    public ProjectTask findPtByProjectSeequence(String backlog_id, String pt_id, Principal principal){
 
-        Backlog backlog = backlogRepository.findByProjectIdentifier(backlog_id);
-        if(backlog==null){
-            throw new ProjectNotFoundException("Project with ID: " +backlog_id+" does not exist");
-        }
+        projectService.findProjectByIdentifier(backlog_id, principal);
 
-       ProjectTask projectTask=projectTaskRepository.findByProjectSequence(pt_id);
+
+        ProjectTask projectTask=projectTaskRepository.findByProjectSequence(pt_id);
 
         if(projectTask==null)
         {
@@ -99,16 +102,16 @@ public class ProjectTaskService {
     }
 
 
-    public ProjectTask updateByProjectSequnce(ProjectTask updatedTask, String backlog_id, String pt_id){
-        ProjectTask projectTask=findPtByProjectSeequence(backlog_id, pt_id);
+    public ProjectTask updateByProjectSequnce(ProjectTask updatedTask, String backlog_id, String pt_id, Principal principal){
+        ProjectTask projectTask=findPtByProjectSeequence(backlog_id, pt_id, principal);
         projectTask=updatedTask;
         return projectTaskRepository.save(projectTask);
 
     }
 
-    public void deletePtByProjectSequence(String backlog_id, String pt_id){
+    public void deletePtByProjectSequence(String backlog_id, String pt_id, Principal principal){
 
-        ProjectTask projectTask=findPtByProjectSeequence(backlog_id, pt_id);
+        ProjectTask projectTask=findPtByProjectSeequence(backlog_id, pt_id, principal);
         projectTaskRepository.delete(projectTask);
     }
 
