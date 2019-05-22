@@ -121,13 +121,17 @@ class UpdateProjectTask extends Component {
                   />
                 </div>
                 <div className="form-group">
-                  <textarea
+                  <input
+                    type="text"
                     className="form-control form-control-lg"
                     placeholder="Acceptance Criteria"
-                    name="acceptanceCriteria"
+                    className={classnames("form-control form-control-lg ", {
+                      "is-invalid": errors.acceptanceCriteria
+                    })}
                     value={this.state.acceptanceCriteria}
                     onChange={this.onChange}
                   />
+                  <p style={{ color: "red" }}>{errors.summary}</p>
                 </div>
                 <h6>Due Date</h6>
                 <div className="form-group">

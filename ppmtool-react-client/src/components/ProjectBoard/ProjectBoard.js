@@ -25,6 +25,8 @@ const boardAlgorithm = (errors, project_tasks) => {
   }
 };
 
+let BoardContent;
+
 class ProjectBoard extends Component {
   constructor() {
     super();
@@ -47,8 +49,6 @@ class ProjectBoard extends Component {
     const { id } = this.props.match.params;
     const { project_tasks } = this.props.backlog;
     const { errors } = this.state;
-    let BoardContent;
-
     BoardContent = boardAlgorithm(errors, project_tasks);
     return (
       <div className="container">
